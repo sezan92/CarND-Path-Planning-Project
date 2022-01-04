@@ -7,11 +7,16 @@
 #include "Eigen-3.3/Eigen/QR"
 #include "helpers.h"
 #include "json.hpp"
+#include "spline.h"
 
 // for convenience
 using nlohmann::json;
 using std::string;
 using std::vector;
+
+const double MAX_SPEED = 50;
+
+void set_speed(double target_speed, double car_s, vector<double> map_waypoints_s, vector<double> map_waypoints_x, vector<double> map_waypoints_y, vector<double> &next_x_vals, vector<double> &next_y_vals);
 
 int main() {
   uWS::Hub h;
@@ -49,6 +54,9 @@ int main() {
     map_waypoints_dx.push_back(d_x);
     map_waypoints_dy.push_back(d_y);
   }
+
+  int lane = 1;
+  double ref_val = 49.5;
 
   h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
                &map_waypoints_dx,&map_waypoints_dy]
@@ -97,14 +105,8 @@ int main() {
            * TODO: define a path made up of (x,y) points that the car will visit
            *   sequentially every .02 seconds
            */
-          double dist_inc = 0.5;
-          for (int i = 0; i < 50; ++i) {
-            double next_s = car_s + (i + 1) * dist_inc;
-            double next_d = 6;
-            vector<double> xy = getXY(next_s, next_d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
-            next_x_vals.push_back(xy[0]);
-            next_y_vals.push_back(xy[1]);
-          }
+          set_speed(25.0, car_s, map_waypoints_s, map_waypoints_x, map_waypoints_y, next_x_vals, next_y_vals);
+          
 
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
@@ -140,4 +142,15 @@ int main() {
   }
   
   h.run();
+}
+
+void set_speed(double target_speed, double car_s, vector<double> map_waypoints_s, vector<double> map_waypoints_x, vector<double> map_waypoints_y, vector<double> &next_x_vals, vector<double> &next_y_vals){
+  double dist_inc = target_speed / MAX_SPEED;
+  for (int i = 0; i < 50; ++i) {
+    double next_s = car_s + (i + 1) * dist_inc;
+    double next_d = 6;
+    vector<double> xy = getXY(next_s, next_d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
+    next_x_vals.push_back(xy[0]);
+    next_y_vals.push_back(xy[1]);
+  }
 }
