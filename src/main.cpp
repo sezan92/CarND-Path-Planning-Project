@@ -108,6 +108,37 @@ int main() {
            * TODO: define a path made up of (x,y) points that the car will visit
            *   sequentially every .02 seconds
            */
+          vector<double> ptsx;
+          vector<double> ptsy;
+
+          double ref_x = car_x;
+          double ref_y = car_y;
+
+          double ref_yaw = deg2rad(car_yaw);
+
+          int prev_size = previous_path_x.size();
+
+          if (prev_size < 2){
+            double prev_car_x = car_x - cos(car_yaw);
+            double prev_car_y = car_y - sin(car_yaw);
+            ptsx.push_back(prev_car_x);
+            ptsy.push_back(prev_car_y);
+          }
+
+
+          else
+          {
+            ref_x = previous_path_x[prev_size - 1];
+            ref_y = previous_path_y[prev_size - 1];
+
+            double ref_x_prev = previous_path_x[prev_size - 2];
+            double ref_y_prev = previous_path_y[prev_size - 2];
+
+            ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
+
+            ptsx.push_back(ref_x_prev);
+          }
+
           set_speed(49.0, car_speed, car_s, map_waypoints_s, map_waypoints_x, map_waypoints_y, next_x_vals, next_y_vals);
           
 
