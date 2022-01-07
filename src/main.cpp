@@ -16,8 +16,9 @@ using std::vector;
 
 const double MAX_SPEED = 50;
 const int NUM_POINTS = 50;
+const int MAX_ACCN = 10;
 
-void set_speed(double target_speed, double car_s, vector<double> map_waypoints_s, vector<double> map_waypoints_x, vector<double> map_waypoints_y, vector<double> &next_x_vals, vector<double> &next_y_vals);
+void set_speed(double target_speed, double current_speed_mph, double car_s, vector<double> map_waypoints_s, vector<double> map_waypoints_x, vector<double> map_waypoints_y, vector<double> &next_x_vals, vector<double> &next_y_vals);
 double mph_to_mps(double target_speed_mph);
 
 int main() {
@@ -107,7 +108,7 @@ int main() {
            * TODO: define a path made up of (x,y) points that the car will visit
            *   sequentially every .02 seconds
            */
-          set_speed(10.0, car_s, map_waypoints_s, map_waypoints_x, map_waypoints_y, next_x_vals, next_y_vals);
+          set_speed(49.0, car_speed, car_s, map_waypoints_s, map_waypoints_x, map_waypoints_y, next_x_vals, next_y_vals);
           
 
           msgJson["next_x"] = next_x_vals;
@@ -150,9 +151,11 @@ double mph_to_mps(double target_speed_mph){
   return target_speed_mph * 1610 / 3600;
 }
 
-void set_speed(double target_speed_mph, double car_s, vector<double> map_waypoints_s, vector<double> map_waypoints_x, vector<double> map_waypoints_y, vector<double> &next_x_vals, vector<double> &next_y_vals){
+void set_speed(double target_speed_mph, double current_speed_mph, double car_s, vector<double> map_waypoints_s, vector<double> map_waypoints_x, vector<double> map_waypoints_y, vector<double> &next_x_vals, vector<double> &next_y_vals){
   
   double target_speed_mps = mph_to_mps(target_speed_mph);
+  double current_speed_mps = mph_to_mps(current_speed_mph);
+  
   double dist_inc = target_speed_mps / NUM_POINTS;
   for (int i = 0; i < NUM_POINTS; ++i) {
     double next_s = car_s + (i + 1) * dist_inc;
