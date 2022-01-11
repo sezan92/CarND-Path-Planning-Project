@@ -22,7 +22,7 @@ void set_speed(double target_speed, double current_speed_mph, double car_s, vect
 double mph_to_mps(double target_speed_mph);
 
 int lane = 1;
-double ref_val = 49.5;
+double ref_vel = 49.5;
 
 int main() {
   uWS::Hub h;
@@ -163,7 +163,7 @@ int main() {
             double shift_y = ptsy[i] - ref_y;
 
             ptsx[i] = (shift_x * cos(0 - ref_yaw) - shift_y * sin(0 - ref_yaw));
-            ptsy[i] = (shift_y * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw));
+            ptsy[i] = (shift_x * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw));
           }
 
           tk::spline s;
@@ -179,11 +179,28 @@ int main() {
           double target_dist = sqrt((target_x * target_x + target_y * target_y));
 
           double x_add_on = 0;
-
+          double N = (target_dist / (0.02 * ref_vel/2.24));
           for(int i = 0; i< NUM_POINTS - previous_path_x.size(); i++){
             
+            double x_point = x_add_on + (target_x) / N;
+            double y_point = s(x_point);
+
+            x_add_on = x_point;
+
+            double x_ref = x_point;
+            double y_ref = y_point;
+
+            x_point = (x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw));
+            y_point = (x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw));
+
+            x_point += ref_x;
+            y_point += ref_y;
+
+            next_x_vals.push_back(x_point);
+            next_y_vals.push_back(y_point);
+
           }
-          set_speed(49.0, car_speed, car_s, map_waypoints_s, map_waypoints_x, map_waypoints_y, next_x_vals, next_y_vals);
+          // set_speed(49.0, car_speed, car_s, map_waypoints_s, map_waypoints_x, map_waypoints_y, next_x_vals, next_y_vals);
           
 
           msgJson["next_x"] = next_x_vals;
