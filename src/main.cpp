@@ -153,9 +153,9 @@ int main() {
           ptsx.push_back(next_wp1[0]);
           ptsx.push_back(next_wp2[0]);
 
-          ptsx.push_back(next_wp0[1]);
-          ptsx.push_back(next_wp1[1]);
-          ptsx.push_back(next_wp2[1]);
+          ptsy.push_back(next_wp0[1]);
+          ptsy.push_back(next_wp1[1]);
+          ptsy.push_back(next_wp2[1]);
 
           for (int i = 0; i < ptsx.size(); i++)
           {
