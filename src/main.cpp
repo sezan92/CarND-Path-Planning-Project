@@ -101,6 +101,10 @@ int main() {
           //   of the road.
           auto sensor_fusion = j[1]["sensor_fusion"];
 
+          int prev_size = previous_path_x.size();
+          if(prev_size > 0) car_s = end_path_s;
+          bool too_close = false;
+
           json msgJson;
 
           vector<double> next_x_vals;
@@ -110,6 +114,27 @@ int main() {
            * TODO: define a path made up of (x,y) points that the car will visit
            *   sequentially every .02 seconds
            */
+          // find ref_v to use
+          for (int i =0; i < sensor_fusion.size(); i++){
+            float d = sensor_fusion[i][6]; // get the lane distance
+            if (d < (2 + 4 * lane + 2) && (2 + 4 * lane - 2)){
+              //car is in my lane using this range
+              double vx = sensor_fusion[i][3];
+              double vy = sensor_fusion[i][4];
+              double check_speed = sqrt(vx * vx + vy * vy);
+              double check_car_s = sensor_fusion[i][5];
+
+              check_car_s+=((double)prev_size * 0.02 * check_speed);//not sure why
+
+              if ((check_car_s > car_s) && ((check_car_s - car_s) < 30)){
+              // lower the reference velocity 
+              ref_vel = 29.5; //mph
+
+              }
+
+            }
+
+          }
           vector<double> ptsx;
           vector<double> ptsy;
 
@@ -118,7 +143,6 @@ int main() {
 
           double ref_yaw = deg2rad(car_yaw);
 
-          int prev_size = previous_path_x.size();
 
           if (prev_size < 2){
             double prev_car_x = car_x - cos(car_yaw);
@@ -202,6 +226,7 @@ int main() {
           }
           // set_speed(49.0, car_speed, car_s, map_waypoints_s, map_waypoints_x, map_waypoints_y, next_x_vals, next_y_vals);
           
+          
 
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
@@ -242,6 +267,7 @@ int main() {
 double mph_to_mps(double target_speed_mph){
   return target_speed_mph * 1610 / 3600;
 }
+
 
 void set_speed(double target_speed_mph, double current_speed_mph, double car_s, vector<double> map_waypoints_s, vector<double> map_waypoints_x, vector<double> map_waypoints_y, vector<double> &next_x_vals, vector<double> &next_y_vals){
   
