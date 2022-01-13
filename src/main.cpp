@@ -22,7 +22,7 @@ void set_speed(double target_speed, double current_speed_mph, double car_s, vect
 double mph_to_mps(double target_speed_mph);
 
 int lane = 1;
-double ref_vel = 49.5;
+double ref_vel = 0;
 
 int main() {
   uWS::Hub h;
@@ -128,12 +128,21 @@ int main() {
 
               if ((check_car_s > car_s) && ((check_car_s - car_s) < 30)){
               // lower the reference velocity 
-              ref_vel = 29.5; //mph
+              too_close = true;
 
               }
 
             }
 
+          }
+
+          if(too_close)
+          {
+            ref_vel -= 0.224;
+          }
+          else if (ref_vel < 49.5)
+          {
+            ref_vel += 0.224;
           }
           vector<double> ptsx;
           vector<double> ptsy;
