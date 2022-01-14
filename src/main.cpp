@@ -116,7 +116,7 @@ int main() {
           // find ref_v to use
           for (int i =0; i < sensor_fusion.size(); i++){
             float d = sensor_fusion[i][6]; // get the lane distance
-            if (d < (2 + 4 * lane + 2) && (2 + 4 * lane - 2)){
+            if (d < (2 + 4 * lane + 2) &&  d > (2 + 4 * lane - 2)){
               //car is in my lane using this range
               double vx = sensor_fusion[i][3];
               double vy = sensor_fusion[i][4];
@@ -128,6 +128,9 @@ int main() {
               if ((check_car_s > car_s) && ((check_car_s - car_s) < 30)){
               // lower the reference velocity 
               too_close = true;
+              if(lane > 0){
+                 lane = 0;
+              }
 
               }
 
@@ -137,7 +140,7 @@ int main() {
 
           if(too_close)
           {
-            ref_vel -= 0.224;
+            ref_vel -= 0.448;
           }
           else if (ref_vel < 49.5)
           {
