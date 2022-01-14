@@ -21,8 +21,6 @@ const int MAX_ACCN = 10;
 void set_speed(double target_speed, double current_speed_mph, double car_s, vector<double> map_waypoints_s, vector<double> map_waypoints_x, vector<double> map_waypoints_y, vector<double> &next_x_vals, vector<double> &next_y_vals);
 double mph_to_mps(double target_speed_mph);
 
-int lane = 1;
-double ref_vel = 0;
 
 int main() {
   uWS::Hub h;
@@ -61,10 +59,11 @@ int main() {
     map_waypoints_dy.push_back(d_y);
   }
 
-  
+  int lane = 1;
+  double ref_vel = 0;
 
   h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
-               &map_waypoints_dx,&map_waypoints_dy]
+               &map_waypoints_dx,&map_waypoints_dy, &lane, &ref_vel]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
