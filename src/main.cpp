@@ -14,7 +14,7 @@ using nlohmann::json;
 using std::string;
 using std::vector;
 
-const double TARGET_SPEED = 50;
+const double TARGET_SPEED = 49.5;
 const int NUM_POINTS = 50;
 const int MAX_ACCN = 10;
 
@@ -230,7 +230,7 @@ void Vehicle::gen_trajectory(vector<double> &next_x_vals,
 }
 
 void Vehicle::speedup(double accn){
-  this->ref_vel += accn;
+  if (this->ref_vel < TARGET_SPEED) this->ref_vel += accn;
 }
 
 void Vehicle::slowdown(double deccn){
@@ -377,7 +377,7 @@ int main() {
           {
             ego.slowdown();
           }
-          else if (ego.ref_vel < 49.5)
+          else
           {
             ego.speedup();
           }
