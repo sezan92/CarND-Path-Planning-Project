@@ -28,13 +28,8 @@ class Vehicle {
   
   virtual ~Vehicle();
   
-  void gen_trajectory(vector <double> previous_path_x, 
-                            vector<double> previous_path_y, 
-                            vector<double> map_waypoints_x, 
-                            vector<double> map_waypoints_y, 
-                            vector<double> map_waypoints_s, 
-                            vector<double> &next_x_vals, 
-                            vector<double> &next_y_vals);
+  void gen_trajectory(vector<double> &next_x_vals, 
+                      vector<double> &next_y_vals);
   void set_xy(double x, double y);
   void set_sd(double s, double d);
   void set_yaw(double yaw);
@@ -42,12 +37,17 @@ class Vehicle {
   void set_lane(int lane);
   void speedup(double accn = 0.224);
   void slowdown(double deccn = 0.448);
+  void set_previous_path(vector<double> previous_path_x, vector<double> previous_path_y);
+  void set_map_waypoints(vector<double> map_waypoints_x,
+                         vector<double> map_waypoints_y,
+                         vector<double> map_waypoints_s);
   void change_lane_left();
   void change_lane_right();
 
+
   int lane;
   double x, y, s, d, ref_vel, yaw;
-
+  vector<double> previous_path_x, previous_path_y, map_waypoints_x, map_waypoints_y, map_waypoints_s;
 
 };
 
@@ -83,12 +83,22 @@ void Vehicle::set_lane(int lane){
   this->lane = lane;
 }
 
-void Vehicle::gen_trajectory(vector <double> previous_path_x, 
-                            vector<double> previous_path_y, 
-                            vector<double> map_waypoints_x, 
-                            vector<double> map_waypoints_y, 
-                            vector<double> map_waypoints_s, 
-                            vector<double> &next_x_vals, 
+void Vehicle::set_previous_path(vector<double> previous_path_x, vector<double> previous_path_y){
+  this->previous_path_x = previous_path_x;
+  this->previous_path_y = previous_path_y;
+}
+
+void Vehicle::set_map_waypoints(vector<double> map_waypoints_x,
+                         vector<double> map_waypoints_y,
+                         vector<double> map_waypoints_s){
+    
+    this->map_waypoints_x = map_waypoints_x;
+    this->map_waypoints_y = map_waypoints_y;
+    this->map_waypoints_s = map_waypoints_s;
+                         }
+
+
+void Vehicle::gen_trajectory(vector<double> &next_x_vals, 
                             vector<double> &next_y_vals){
   vector<double> ptsx;
   vector<double> ptsy;
@@ -97,7 +107,7 @@ void Vehicle::gen_trajectory(vector <double> previous_path_x,
   double ref_y = this->y;
 
   double ref_yaw = deg2rad(this->yaw);
-  int prev_size = previous_path_x.size();
+  int prev_size = this->previous_path_x.size();
 
   if (prev_size < 2){
     double prev_car_x = this->x - cos(this->yaw);
@@ -109,11 +119,11 @@ void Vehicle::gen_trajectory(vector <double> previous_path_x,
 
   else
   {
-    ref_x = previous_path_x[prev_size - 1];
-    ref_y = previous_path_y[prev_size - 1];
+    ref_x = this->previous_path_x[prev_size - 1];
+    ref_y = this->previous_path_y[prev_size - 1];
 
-    double ref_x_prev = previous_path_x[prev_size - 2];
-    double ref_y_prev = previous_path_y[prev_size - 2];
+    double ref_x_prev = this->previous_path_x[prev_size - 2];
+    double ref_y_prev = this->previous_path_y[prev_size - 2];
 
     ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
 
@@ -124,9 +134,9 @@ void Vehicle::gen_trajectory(vector <double> previous_path_x,
     ptsy.push_back(ref_y);
   }
 
-  vector<double> next_wp0 = getXY(this->s + 30, (2 + 4 * this->lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-  vector<double> next_wp1 = getXY(this->s + 60, (2 + 4 * this->lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-  vector<double> next_wp2 = getXY(this->s + 90, (2 + 4 * this->lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+  vector<double> next_wp0 = getXY(this->s + 30, (2 + 4 * this->lane), this->map_waypoints_s, this->map_waypoints_x, this->map_waypoints_y);
+  vector<double> next_wp1 = getXY(this->s + 60, (2 + 4 * this->lane), this->map_waypoints_s, this->map_waypoints_x, this->map_waypoints_y);
+  vector<double> next_wp2 = getXY(this->s + 90, (2 + 4 * this->lane), this->map_waypoints_s, this->map_waypoints_x, this->map_waypoints_y);
   
   ptsx.push_back(next_wp0[0]);
   ptsx.push_back(next_wp1[0]);
@@ -148,10 +158,10 @@ void Vehicle::gen_trajectory(vector <double> previous_path_x,
   tk::spline s;
   s.set_points(ptsx, ptsy);
 
-  for(int i = 0; i < previous_path_x.size(); i++)
+  for(int i = 0; i < this->previous_path_x.size(); i++)
   {
-    next_x_vals.push_back(previous_path_x[i]);
-    next_y_vals.push_back(previous_path_y[i]);
+    next_x_vals.push_back(this->previous_path_x[i]);
+    next_y_vals.push_back(this->previous_path_y[i]);
   }
   double target_x = 30.0;
   double target_y = s(target_x);
@@ -159,7 +169,7 @@ void Vehicle::gen_trajectory(vector <double> previous_path_x,
 
   double x_add_on = 0;
   double N = (target_dist / (0.02 * this->ref_vel /2.24));
-  for(int i = 0; i< NUM_POINTS - previous_path_x.size(); i++){
+  for(int i = 0; i< NUM_POINTS - this->previous_path_x.size(); i++){
     
     double x_point = x_add_on + (target_x) / N;
     double y_point = s(x_point);
@@ -229,6 +239,9 @@ int main() {
   }
 
   Vehicle ego(1, 0, 0, 0, 0, 0, 0);
+  ego.set_map_waypoints(map_waypoints_x,
+                        map_waypoints_y,
+                        map_waypoints_s);
   
 
   h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
@@ -279,6 +292,8 @@ int main() {
           ego.set_xy(car_x, car_y);
           ego.set_sd(car_s, car_d);
           ego.set_yaw(car_yaw);
+          ego.set_previous_path(previous_path_x, previous_path_y);
+          
           
           std::cout<<"printing ego lane:  "<<ego.lane<<std::endl;
           std::cout<<"printing ego x:  "<<ego.x<<std::endl;
@@ -327,13 +342,7 @@ int main() {
           {
             ego.speedup();
           }
-          ego.gen_trajectory(previous_path_x,
-                            previous_path_y,
-                            map_waypoints_x,
-                            map_waypoints_y,
-                            map_waypoints_s,
-                            next_x_vals,
-                            next_y_vals);
+          ego.gen_trajectory(next_x_vals, next_y_vals);
 
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
