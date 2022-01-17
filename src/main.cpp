@@ -14,13 +14,68 @@ using nlohmann::json;
 using std::string;
 using std::vector;
 
-const double MAX_SPEED = 50;
+const double TARGET_SPEED = 50;
 const int NUM_POINTS = 50;
 const int MAX_ACCN = 10;
 
 void set_speed(double target_speed, double current_speed_mph, double car_s, vector<double> map_waypoints_s, vector<double> map_waypoints_x, vector<double> map_waypoints_y, vector<double> &next_x_vals, vector<double> &next_y_vals);
 double mph_to_mps(double target_speed_mph);
 
+class Vehicle {
+  public:
+  Vehicle();
+  Vehicle(int lane, double x, double y, double s, double d, double yaw, double ref_vel);
+  
+  virtual ~Vehicle();
+  
+  void get_trajectory( vector<double> &next_x_vals, vector<double> &next_y_vals);
+  void set_xy(double x, double y);
+  void set_sd(double s, double d);
+  void set_yaw(double yaw);
+  void set_ref_vel(double ref_vel);
+  void set_lane(int lane);
+  void change_lane_left();
+  void change_lane_right();
+
+  int lane;
+  double x, y, s, d, ref_vel, yaw;
+
+
+};
+
+Vehicle::Vehicle(){}
+Vehicle::Vehicle(int lane, double x, double y, double s, double d, double yaw, double ref_vel){
+  this->lane = lane;
+  this-> x = x;
+  this-> y = y;
+  this->s = s;
+  this->d = d;
+  this->ref_vel = ref_vel;
+  this->yaw = yaw;
+
+}
+void Vehicle::set_xy(double x, double y){
+  this->x = x;
+  this->y = y;
+}
+void Vehicle::set_sd(double s, double d){
+  this->s = s;
+  this->d = d;
+}
+
+void Vehicle::set_yaw(double yaw){
+  this->yaw = yaw;
+}
+
+void Vehicle::set_ref_vel(double ref_vel){
+  this->ref_vel = ref_vel;
+}
+
+void Vehicle::set_lane(int lane){
+  this->lane = lane;
+}
+
+Vehicle::~Vehicle() {}
 
 int main() {
   uWS::Hub h;
@@ -59,11 +114,11 @@ int main() {
     map_waypoints_dy.push_back(d_y);
   }
 
-  int lane = 1;
-  double ref_vel = 0;
+  Vehicle ego(1, 0, 0, 0, 0, 0, 0);
+  
 
   h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
-               &map_waypoints_dx,&map_waypoints_dy, &lane, &ref_vel]
+               &map_waypoints_dx,&map_waypoints_dy, &ego]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -106,6 +161,18 @@ int main() {
 
           json msgJson;
 
+          std::cout<<"Test"<<std::endl;
+          ego.set_xy(car_x, car_y);
+          ego.set_sd(car_s, car_d);
+          ego.set_yaw(car_yaw);
+          
+          std::cout<<"printing ego lane:  "<<ego.lane<<std::endl;
+          std::cout<<"printing ego x:  "<<ego.x<<std::endl;
+          std::cout<<"printing ego y:  "<<ego.y<<std::endl;
+          std::cout<<"printing ego s:  "<<ego.s<<std::endl;
+          std::cout<<"printing ego d:  "<<ego.d<<std::endl;
+          std::cout<<"printing ego yaw:  "<<ego.yaw<<std::endl;
+          std::cout<<"printing ego ref_vel:  "<<ego.ref_vel<<std::endl;
           vector<double> next_x_vals;
           vector<double> next_y_vals;
 
@@ -116,7 +183,7 @@ int main() {
           // find ref_v to use
           for (int i =0; i < sensor_fusion.size(); i++){
             float d = sensor_fusion[i][6]; // get the lane distance
-            if (d < (2 + 4 * lane + 2) &&  d > (2 + 4 * lane - 2)){
+            if (d < (2 + 4 * ego.lane + 2) &&  d > (2 + 4 * ego.lane - 2)){
               //car is in my lane using this range
               double vx = sensor_fusion[i][3];
               double vy = sensor_fusion[i][4];
@@ -128,8 +195,8 @@ int main() {
               if ((check_car_s > car_s) && ((check_car_s - car_s) < 30)){
               // lower the reference velocity 
               too_close = true;
-              if(lane > 0){
-                 lane = 0;
+              if(ego.lane > 0){
+                 ego.lane -= 1;
               }
 
               }
@@ -140,24 +207,24 @@ int main() {
 
           if(too_close)
           {
-            ref_vel -= 0.448;
+            ego.ref_vel -= 0.448;
           }
-          else if (ref_vel < 49.5)
+          else if (ego.ref_vel < 49.5)
           {
-            ref_vel += 0.224;
+            ego.ref_vel += 0.224;
           }
           vector<double> ptsx;
           vector<double> ptsy;
 
-          double ref_x = car_x;
-          double ref_y = car_y;
+          double ref_x = ego.x;
+          double ref_y = ego.y;
 
-          double ref_yaw = deg2rad(car_yaw);
+          double ref_yaw = deg2rad(ego.yaw);
 
 
           if (prev_size < 2){
-            double prev_car_x = car_x - cos(car_yaw);
-            double prev_car_y = car_y - sin(car_yaw);
+            double prev_car_x =ego.x - cos(ego.yaw);
+            double prev_car_y =ego.y - sin(ego.yaw);
             ptsx.push_back(prev_car_x);
             ptsy.push_back(prev_car_y);
           }
@@ -180,9 +247,9 @@ int main() {
             ptsy.push_back(ref_y);
           }
 
-          vector<double> next_wp0 = getXY(car_s + 30, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-          vector<double> next_wp1 = getXY(car_s + 60, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-          vector<double> next_wp2 = getXY(car_s + 90, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+          vector<double> next_wp0 = getXY(car_s + 30, (2 + 4 * ego.lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+          vector<double> next_wp1 = getXY(car_s + 60, (2 + 4 * ego.lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+          vector<double> next_wp2 = getXY(car_s + 90, (2 + 4 * ego.lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
           
           ptsx.push_back(next_wp0[0]);
           ptsx.push_back(next_wp1[0]);
@@ -214,7 +281,7 @@ int main() {
           double target_dist = sqrt((target_x * target_x + target_y * target_y));
 
           double x_add_on = 0;
-          double N = (target_dist / (0.02 * ref_vel/2.24));
+          double N = (target_dist / (0.02 * ego.ref_vel /2.24));
           for(int i = 0; i< NUM_POINTS - previous_path_x.size(); i++){
             
             double x_point = x_add_on + (target_x) / N;
