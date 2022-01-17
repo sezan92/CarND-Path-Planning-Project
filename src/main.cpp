@@ -41,8 +41,9 @@ class Vehicle {
   void set_map_waypoints(vector<double> map_waypoints_x,
                          vector<double> map_waypoints_y,
                          vector<double> map_waypoints_s);
-  void change_lane_left();
-  void change_lane_right();
+  bool change_lane_left();
+  bool change_lane_right();
+  bool change_lane();
 
 
   int lane;
@@ -86,6 +87,38 @@ void Vehicle::set_lane(int lane){
 void Vehicle::set_previous_path(vector<double> previous_path_x, vector<double> previous_path_y){
   this->previous_path_x = previous_path_x;
   this->previous_path_y = previous_path_y;
+}
+
+bool Vehicle::change_lane_right(){
+  if (this->lane < 2) 
+  {
+    this->lane += 1;
+    return true;
+  }
+  else return false;
+}
+bool Vehicle::change_lane_left(){
+  if (this->lane > 0)
+  {
+    this->lane -= 1;
+    return true;
+  }
+  else return false;
+}
+
+bool Vehicle::change_lane()
+{
+  if (this->lane==0){
+    return this->change_lane_right();
+  }
+  else if (this->lane==2){
+    return this->change_lane_left();
+  }
+  else if (this->lane==1){
+    return this->change_lane_right();
+  }
+  else return false;
+
 }
 
 void Vehicle::set_map_waypoints(vector<double> map_waypoints_x,
@@ -324,9 +357,7 @@ int main() {
               if ((check_car_s > car_s) && ((check_car_s - car_s) < 30)){
               // lower the reference velocity 
               too_close = true;
-              if(ego.lane > 0){
-                 ego.lane -= 1;
-              }
+              ego.change_lane();
 
               }
 
