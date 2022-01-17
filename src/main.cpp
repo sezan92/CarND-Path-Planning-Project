@@ -40,6 +40,8 @@ class Vehicle {
   void set_yaw(double yaw);
   void set_ref_vel(double ref_vel);
   void set_lane(int lane);
+  void speedup(double accn = 0.224);
+  void slowdown(double deccn = 0.448);
   void change_lane_left();
   void change_lane_right();
 
@@ -179,6 +181,14 @@ void Vehicle::gen_trajectory(vector <double> previous_path_x,
   }
 }
 
+void Vehicle::speedup(double accn){
+  this->ref_vel += accn;
+}
+
+void Vehicle::slowdown(double deccn){
+  this->ref_vel -= deccn;
+}
+
 Vehicle::~Vehicle() {}
 
 int main() {
@@ -311,11 +321,11 @@ int main() {
 
           if(too_close)
           {
-            ego.ref_vel -= 0.448;
+            ego.slowdown();
           }
           else if (ego.ref_vel < 49.5)
           {
-            ego.ref_vel += 0.224;
+            ego.speedup();
           }
           ego.gen_trajectory(previous_path_x,
                             previous_path_y,
