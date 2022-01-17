@@ -45,7 +45,7 @@ class Vehicle {
   bool change_lane_left();
   bool change_lane_right();
   bool change_lane();
-
+  bool check_car_in_lane(int lane, double max_distance=30);
 
   int lane;
   double x, y, s, d, ref_vel, yaw;
@@ -121,6 +121,31 @@ bool Vehicle::change_lane()
   }
   else return false;
 
+}
+
+bool Vehicle::check_car_in_lane(int lane, double max_distance){
+  int prev_size = this->previous_path_x.size();
+
+  for (int i =0; i < this->sensor_fusion.size(); i++){
+    float d = this->sensor_fusion[i][6]; // get the lane distance
+    if (d < (2 + 4 * lane + 2) &&  d > (2 + 4 * lane - 2)){
+      //car is in my lane using this range
+      double vx = this->sensor_fusion[i][3];
+      double vy = this->sensor_fusion[i][4];
+      double check_speed = sqrt(vx * vx + vy * vy);
+      double check_car_s = this->sensor_fusion[i][5];
+
+      check_car_s+=((double)prev_size * 0.02 * check_speed);//not sure why
+
+      if ((check_car_s > this->s) && ((check_car_s - this->s) < max_distance))
+      {
+        return true;
+      }
+
+    }
+
+  }
+  return false;
 }
 
 void Vehicle::set_map_waypoints(vector<double> map_waypoints_x,
@@ -350,31 +375,11 @@ int main() {
            * TODO: define a path made up of (x,y) points that the car will visit
            *   sequentially every .02 seconds
            */
-          // find ref_v to use
-          for (int i =0; i < sensor_fusion.size(); i++){
-            float d = sensor_fusion[i][6]; // get the lane distance
-            if (d < (2 + 4 * ego.lane + 2) &&  d > (2 + 4 * ego.lane - 2)){
-              //car is in my lane using this range
-              double vx = sensor_fusion[i][3];
-              double vy = sensor_fusion[i][4];
-              double check_speed = sqrt(vx * vx + vy * vy);
-              double check_car_s = sensor_fusion[i][5];
 
-              check_car_s+=((double)prev_size * 0.02 * check_speed);//not sure why
-
-              if ((check_car_s > car_s) && ((check_car_s - car_s) < 30)){
-              // lower the reference velocity 
-              too_close = true;
-              ego.change_lane();
-
-              }
-
-            }
-
-          }
-
+          too_close = ego.check_car_in_lane(ego.lane);
           if(too_close)
           {
+            ego.change_lane();
             ego.slowdown();
           }
           else
