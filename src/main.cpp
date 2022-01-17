@@ -41,6 +41,7 @@ class Vehicle {
   void set_map_waypoints(vector<double> map_waypoints_x,
                          vector<double> map_waypoints_y,
                          vector<double> map_waypoints_s);
+  void set_sensor_fusion(vector<vector<double>> sensor_fusion);
   bool change_lane_left();
   bool change_lane_right();
   bool change_lane();
@@ -49,6 +50,7 @@ class Vehicle {
   int lane;
   double x, y, s, d, ref_vel, yaw;
   vector<double> previous_path_x, previous_path_y, map_waypoints_x, map_waypoints_y, map_waypoints_s;
+  vector<vector<double>> sensor_fusion;
 
 };
 
@@ -130,6 +132,9 @@ void Vehicle::set_map_waypoints(vector<double> map_waypoints_x,
     this->map_waypoints_s = map_waypoints_s;
                          }
 
+void Vehicle::set_sensor_fusion(vector<vector<double>> sensor_fusion){
+  this->sensor_fusion = sensor_fusion;
+}
 
 void Vehicle::gen_trajectory(vector<double> &next_x_vals, 
                             vector<double> &next_y_vals){
@@ -326,6 +331,7 @@ int main() {
           ego.set_sd(car_s, car_d);
           ego.set_yaw(car_yaw);
           ego.set_previous_path(previous_path_x, previous_path_y);
+          ego.set_sensor_fusion(sensor_fusion);
           
           
           std::cout<<"printing ego lane:  "<<ego.lane<<std::endl;
@@ -335,6 +341,8 @@ int main() {
           std::cout<<"printing ego d:  "<<ego.d<<std::endl;
           std::cout<<"printing ego yaw:  "<<ego.yaw<<std::endl;
           std::cout<<"printing ego ref_vel:  "<<ego.ref_vel<<std::endl;
+          std::cout<<"printing sensor_fusion size: "<<ego.sensor_fusion.size()<<std::endl;
+          
           vector<double> next_x_vals;
           vector<double> next_y_vals;
 
