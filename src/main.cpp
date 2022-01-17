@@ -28,7 +28,13 @@ class Vehicle {
   
   virtual ~Vehicle();
   
-  void get_trajectory( vector<double> &next_x_vals, vector<double> &next_y_vals);
+  void gen_trajectory(vector <double> previous_path_x, 
+                            vector<double> previous_path_y, 
+                            vector<double> map_waypoints_x, 
+                            vector<double> map_waypoints_y, 
+                            vector<double> map_waypoints_s, 
+                            vector<double> &next_x_vals, 
+                            vector<double> &next_y_vals);
   void set_xy(double x, double y);
   void set_sd(double s, double d);
   void set_yaw(double yaw);
@@ -73,6 +79,104 @@ void Vehicle::set_ref_vel(double ref_vel){
 
 void Vehicle::set_lane(int lane){
   this->lane = lane;
+}
+
+void Vehicle::gen_trajectory(vector <double> previous_path_x, 
+                            vector<double> previous_path_y, 
+                            vector<double> map_waypoints_x, 
+                            vector<double> map_waypoints_y, 
+                            vector<double> map_waypoints_s, 
+                            vector<double> &next_x_vals, 
+                            vector<double> &next_y_vals){
+  vector<double> ptsx;
+  vector<double> ptsy;
+
+  double ref_x = this->x;
+  double ref_y = this->y;
+
+  double ref_yaw = deg2rad(this->yaw);
+  int prev_size = previous_path_x.size();
+
+  if (prev_size < 2){
+    double prev_car_x = this->x - cos(this->yaw);
+    double prev_car_y = this->y - sin(this->yaw);
+    ptsx.push_back(prev_car_x);
+    ptsy.push_back(prev_car_y);
+  }
+
+
+  else
+  {
+    ref_x = previous_path_x[prev_size - 1];
+    ref_y = previous_path_y[prev_size - 1];
+
+    double ref_x_prev = previous_path_x[prev_size - 2];
+    double ref_y_prev = previous_path_y[prev_size - 2];
+
+    ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
+
+    ptsx.push_back(ref_x_prev);
+    ptsx.push_back(ref_x);
+    
+    ptsy.push_back(ref_y_prev);
+    ptsy.push_back(ref_y);
+  }
+
+  vector<double> next_wp0 = getXY(this->s + 30, (2 + 4 * this->lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+  vector<double> next_wp1 = getXY(this->s + 60, (2 + 4 * this->lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+  vector<double> next_wp2 = getXY(this->s + 90, (2 + 4 * this->lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+  
+  ptsx.push_back(next_wp0[0]);
+  ptsx.push_back(next_wp1[0]);
+  ptsx.push_back(next_wp2[0]);
+
+  ptsy.push_back(next_wp0[1]);
+  ptsy.push_back(next_wp1[1]);
+  ptsy.push_back(next_wp2[1]);
+
+  for (int i = 0; i < ptsx.size(); i++)
+  {
+    double shift_x = ptsx[i] - ref_x;
+    double shift_y = ptsy[i] - ref_y;
+
+    ptsx[i] = (shift_x * cos(0 - ref_yaw) - shift_y * sin(0 - ref_yaw));
+    ptsy[i] = (shift_x * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw));
+  }
+
+  tk::spline s;
+  s.set_points(ptsx, ptsy);
+
+  for(int i = 0; i < previous_path_x.size(); i++)
+  {
+    next_x_vals.push_back(previous_path_x[i]);
+    next_y_vals.push_back(previous_path_y[i]);
+  }
+  double target_x = 30.0;
+  double target_y = s(target_x);
+  double target_dist = sqrt((target_x * target_x + target_y * target_y));
+
+  double x_add_on = 0;
+  double N = (target_dist / (0.02 * this->ref_vel /2.24));
+  for(int i = 0; i< NUM_POINTS - previous_path_x.size(); i++){
+    
+    double x_point = x_add_on + (target_x) / N;
+    double y_point = s(x_point);
+
+    x_add_on = x_point;
+
+    double x_ref = x_point;
+    double y_ref = y_point;
+
+    x_point = (x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw));
+    y_point = (x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw));
+
+    x_point += ref_x;
+    y_point += ref_y;
+
+    next_x_vals.push_back(x_point);
+    next_y_vals.push_back(y_point);
+
+  }
 }
 
 Vehicle::~Vehicle() {}
@@ -213,98 +317,13 @@ int main() {
           {
             ego.ref_vel += 0.224;
           }
-          vector<double> ptsx;
-          vector<double> ptsy;
-
-          double ref_x = ego.x;
-          double ref_y = ego.y;
-
-          double ref_yaw = deg2rad(ego.yaw);
-
-
-          if (prev_size < 2){
-            double prev_car_x =ego.x - cos(ego.yaw);
-            double prev_car_y =ego.y - sin(ego.yaw);
-            ptsx.push_back(prev_car_x);
-            ptsy.push_back(prev_car_y);
-          }
-
-
-          else
-          {
-            ref_x = previous_path_x[prev_size - 1];
-            ref_y = previous_path_y[prev_size - 1];
-
-            double ref_x_prev = previous_path_x[prev_size - 2];
-            double ref_y_prev = previous_path_y[prev_size - 2];
-
-            ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
-
-            ptsx.push_back(ref_x_prev);
-            ptsx.push_back(ref_x);
-            
-            ptsy.push_back(ref_y_prev);
-            ptsy.push_back(ref_y);
-          }
-
-          vector<double> next_wp0 = getXY(car_s + 30, (2 + 4 * ego.lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-          vector<double> next_wp1 = getXY(car_s + 60, (2 + 4 * ego.lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-          vector<double> next_wp2 = getXY(car_s + 90, (2 + 4 * ego.lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-          
-          ptsx.push_back(next_wp0[0]);
-          ptsx.push_back(next_wp1[0]);
-          ptsx.push_back(next_wp2[0]);
-
-          ptsy.push_back(next_wp0[1]);
-          ptsy.push_back(next_wp1[1]);
-          ptsy.push_back(next_wp2[1]);
-
-          for (int i = 0; i < ptsx.size(); i++)
-          {
-            double shift_x = ptsx[i] - ref_x;
-            double shift_y = ptsy[i] - ref_y;
-
-            ptsx[i] = (shift_x * cos(0 - ref_yaw) - shift_y * sin(0 - ref_yaw));
-            ptsy[i] = (shift_x * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw));
-          }
-
-          tk::spline s;
-          s.set_points(ptsx, ptsy);
-
-          for(int i = 0; i < previous_path_x.size(); i++)
-          {
-            next_x_vals.push_back(previous_path_x[i]);
-            next_y_vals.push_back(previous_path_y[i]);
-          }
-          double target_x = 30.0;
-          double target_y = s(target_x);
-          double target_dist = sqrt((target_x * target_x + target_y * target_y));
-
-          double x_add_on = 0;
-          double N = (target_dist / (0.02 * ego.ref_vel /2.24));
-          for(int i = 0; i< NUM_POINTS - previous_path_x.size(); i++){
-            
-            double x_point = x_add_on + (target_x) / N;
-            double y_point = s(x_point);
-
-            x_add_on = x_point;
-
-            double x_ref = x_point;
-            double y_ref = y_point;
-
-            x_point = (x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw));
-            y_point = (x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw));
-
-            x_point += ref_x;
-            y_point += ref_y;
-
-            next_x_vals.push_back(x_point);
-            next_y_vals.push_back(y_point);
-
-          }
-          // set_speed(49.0, car_speed, car_s, map_waypoints_s, map_waypoints_x, map_waypoints_y, next_x_vals, next_y_vals);
-          
-          
+          ego.gen_trajectory(previous_path_x,
+                            previous_path_y,
+                            map_waypoints_x,
+                            map_waypoints_y,
+                            map_waypoints_s,
+                            next_x_vals,
+                            next_y_vals);
 
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
