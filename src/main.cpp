@@ -114,14 +114,15 @@ int main() {
           ego.set_sensor_fusion(sensor_fusion);
           
           
-          std::cout<<"printing ego lane:  "<<ego.lane<<std::endl;
-          std::cout<<"printing ego x:  "<<ego.x<<std::endl;
-          std::cout<<"printing ego y:  "<<ego.y<<std::endl;
-          std::cout<<"printing ego s:  "<<ego.s<<std::endl;
-          std::cout<<"printing ego d:  "<<ego.d<<std::endl;
-          std::cout<<"printing ego yaw:  "<<ego.yaw<<std::endl;
-          std::cout<<"printing ego ref_vel:  "<<ego.ref_vel<<std::endl;
-          std::cout<<"printing sensor_fusion size: "<<ego.sensor_fusion.size()<<std::endl;
+          std::cout<<"INFO: ego lane:  "<<ego.lane<<std::endl;
+          std::cout<<"INFO: ego x:  "<<ego.x<<std::endl;
+          std::cout<<"INFO: ego y:  "<<ego.y<<std::endl;
+          std::cout<<"INFO: ego s:  "<<ego.s<<std::endl;
+          std::cout<<"INFO: ego d:  "<<ego.d<<std::endl;
+          std::cout<<"INFO: ego yaw:  "<<ego.yaw<<std::endl;
+          std::cout<<"INFO: ego ref_vel:  "<<ego.ref_vel<<std::endl;
+          std::cout<<"INFO: sensor_fusion size: "<<ego.sensor_fusion.size()<<std::endl;
+          std::cout<<"INFO: state: "<<ego.state<<std::endl;
           
           vector<double> next_x_vals;
           vector<double> next_y_vals;

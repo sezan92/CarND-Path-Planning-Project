@@ -3,15 +3,18 @@
 #include "helpers.h"
 #include "spline.h"
 using std::vector;
-
+using std::string;
+using std::map;
 const double TARGET_SPEED = 49.5;
 const int NUM_POINTS = 50;
 const int MAX_ACCN = 10;
 
+map<string, double> state_cost { {"KL", -100000.00}, {"LCL", -100000.00} , {"RCL", -100000.00}, {"KL_SD", -100000.00}};
+
 class Vehicle {
   public:
   Vehicle();
-  Vehicle(int lane, double x, double y, double s, double d, double yaw, double ref_vel);
+  Vehicle(int lane, double x, double y, double s, double d, double yaw, double ref_vel, string state="KL");
   
   virtual ~Vehicle();
   
@@ -33,16 +36,18 @@ class Vehicle {
   bool change_lane_right();
   bool change_lane();
   bool check_car_in_lane(int lane, double max_distance=30);
+  void set_state(string new_state);
 
   int lane;
   double x, y, s, d, ref_vel, yaw;
+  string state;
   vector<double> previous_path_x, previous_path_y, map_waypoints_x, map_waypoints_y, map_waypoints_s;
   vector<vector<double>> sensor_fusion;
 
 };
 
 Vehicle::Vehicle(){}
-Vehicle::Vehicle(int lane, double x, double y, double s, double d, double yaw, double ref_vel){
+Vehicle::Vehicle(int lane, double x, double y, double s, double d, double yaw, double ref_vel, string state){
   this->lane = lane;
   this-> x = x;
   this-> y = y;
@@ -50,6 +55,7 @@ Vehicle::Vehicle(int lane, double x, double y, double s, double d, double yaw, d
   this->d = d;
   this->ref_vel = ref_vel;
   this->yaw = yaw;
+  this->state = state;
 
 }
 void Vehicle::set_xy(double x, double y){
@@ -77,6 +83,9 @@ void Vehicle::set_previous_path(vector<double> previous_path_x, vector<double> p
   this->previous_path_x = previous_path_x;
   this->previous_path_y = previous_path_y;
 }
+void Vehicle::set_state(string new_state){
+  this->state = new_state;
+}
 
 bool Vehicle::change_lane_right(){
   if (this->lane < 2) 
@@ -98,12 +107,16 @@ bool Vehicle::change_lane_left(){
 bool Vehicle::change_lane()
 {
   if (this->lane==0){
+
+    this->set_state("RCL");
     return this->change_lane_right();
   }
   else if (this->lane==2){
+    this->set_state("LCL");
     return this->change_lane_left();
   }
   else if (this->lane==1){
+    this->set_state("RCL");
     return this->change_lane_right();
   }
   else return false;
@@ -242,6 +255,7 @@ void Vehicle::gen_trajectory(vector<double> &next_x_vals,
 }
 
 void Vehicle::speedup(double accn){
+  this->set_state("KL");
   if (this->ref_vel < TARGET_SPEED) this->ref_vel += accn;
 }
 
