@@ -1,5 +1,6 @@
 #include<vector>
 #include<vector>
+#include<float.h>
 #include "helpers.h"
 #include "spline.h"
 using std::vector;
@@ -9,7 +10,7 @@ const double TARGET_SPEED = 49.5;
 const int NUM_POINTS = 50;
 const int MAX_ACCN = 10;
 
-map<string, double> state_cost { {"KL", -100000.00}, {"LCL", -100000.00} , {"RCL", -100000.00}, {"KL_SD", -100000.00}};
+
 
 class Vehicle {
   public:
@@ -35,14 +36,16 @@ class Vehicle {
   bool change_lane_left();
   bool change_lane_right();
   bool change_lane();
-  bool check_car_in_lane(int lane, double max_distance=30);
+  bool check_car_in_lane(int lane,  double &cost, double max_distance=30);
   void set_state(string new_state);
+  void get_new_state_cost();
 
   int lane;
   double x, y, s, d, ref_vel, yaw;
   string state;
   vector<double> previous_path_x, previous_path_y, map_waypoints_x, map_waypoints_y, map_waypoints_s;
   vector<vector<double>> sensor_fusion;
+  map<string, double> state_cost { {"KL", -100000.00}, {"LCL", -100000.00} , {"RCL", -100000.00}, {"KL_SD", -100000.00}};
 
 };
 
@@ -123,7 +126,51 @@ bool Vehicle::change_lane()
 
 }
 
-bool Vehicle::check_car_in_lane(int lane, double max_distance){
+void Vehicle::get_new_state_cost(){
+  for (map<string, double>::const_iterator it = this->state_cost.begin(); it!=this->state_cost.end(); ++it ){
+    string key = it->first;
+    double cost = it->second;
+    int new_lane;
+    bool last_lane = false;
+
+    if (key.compare("KL") or key.compare("KL_SD")){
+      new_lane = this->lane;
+    }
+
+    else if (key.compare("RCL")){
+      if (this->lane < 2) {
+        new_lane = this->lane + 1;
+
+      }
+      else {
+        last_lane = true;
+      }
+    }
+
+    else if (key.compare("LCL")) {
+      if (this->lane > 0){
+        new_lane = this->lane - 1;
+      }
+      else {
+        last_lane = true;
+
+      }
+
+    }
+
+    if(last_lane){
+      cost = DBL_MIN;
+    }    
+    else{
+      bool too_close = this->check_car_in_lane(new_lane, cost);
+      this->state_cost[key] = cost;
+
+    }
+    
+  }
+}
+
+bool Vehicle::check_car_in_lane(int lane, double &cost, double max_distance){
   int prev_size = this->previous_path_x.size();
 
   for (int i =0; i < this->sensor_fusion.size(); i++){
@@ -137,14 +184,28 @@ bool Vehicle::check_car_in_lane(int lane, double max_distance){
 
       check_car_s+=((double)prev_size * 0.02 * check_speed);//not sure why
 
-      if ((check_car_s > this->s) && ((check_car_s - this->s) < max_distance))
+      if (lane == this->lane)
       {
-        return true;
-      }
 
+        if ((check_car_s > this->s) && ((check_car_s - this->s) < max_distance))
+        {
+          cost = this->s - check_car_s;
+          return true;
+          
+        }
+
+      }
+      else 
+      {
+        if (abs(check_car_s - this->s) < max_distance){
+          cost = -abs(check_car_s - this->s);
+          return true;
+        }
+      }
     }
 
   }
+  cost = 0;
   return false;
 }
 
