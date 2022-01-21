@@ -45,7 +45,7 @@ class Vehicle {
   string state;
   vector<double> previous_path_x, previous_path_y, map_waypoints_x, map_waypoints_y, map_waypoints_s;
   vector<vector<double>> sensor_fusion;
-  map<string, double> state_cost { {"KL", -100000.00}, {"LCL", -100000.00} , {"RCL", -100000.00}, {"KL_SD", -100000.00}};
+  map<int, double> state_cost { {0, -100000.00}, {1, -100000.00} , {2, -100000.00}};//, {"KL_SD", -100000.00}};
 
 };
 
@@ -127,46 +127,11 @@ bool Vehicle::change_lane()
 }
 
 void Vehicle::get_new_state_cost(){
-  for (map<string, double>::const_iterator it = this->state_cost.begin(); it!=this->state_cost.end(); ++it ){
-    string key = it->first;
+  for (map<int, double>::const_iterator it = this->state_cost.begin(); it!=this->state_cost.end(); ++it ){
+    int key = it->first;
     double cost = it->second;
-    int new_lane;
-    bool last_lane = false;
-
-    if (key.compare("KL") or key.compare("KL_SD")){
-      new_lane = this->lane;
-    }
-
-    else if (key.compare("RCL")){
-      if (this->lane < 2) {
-        new_lane = this->lane + 1;
-
-      }
-      else {
-        last_lane = true;
-      }
-    }
-
-    else if (key.compare("LCL")) {
-      if (this->lane > 0){
-        new_lane = this->lane - 1;
-      }
-      else {
-        last_lane = true;
-
-      }
-
-    }
-
-    if(last_lane){
-      cost = DBL_MIN;
-    }    
-    else{
-      bool too_close = this->check_car_in_lane(new_lane, cost);
-      this->state_cost[key] = cost;
-
-    }
-    
+    bool too_close = this->check_car_in_lane(key, cost);
+    this->state_cost[key] = cost;  
   }
 }
 
