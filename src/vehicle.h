@@ -38,14 +38,14 @@ class Vehicle {
   bool change_lane();
   bool check_car_in_lane(int lane,  double &cost, double max_distance=30);
   void set_state(string new_state);
-  void get_new_state_cost();
+  void get_new_lane_cost();
 
   int lane;
   double x, y, s, d, ref_vel, yaw;
   string state;
   vector<double> previous_path_x, previous_path_y, map_waypoints_x, map_waypoints_y, map_waypoints_s;
   vector<vector<double>> sensor_fusion;
-  map<int, double> state_cost { {0, -100000.00}, {1, -100000.00} , {2, -100000.00}, {3, -100000.00}};
+  map<int, double> lane_cost { {0, -100000.00}, {1, -100000.00} , {2, -100000.00}, {3, -100000.00}};
 
 };
 
@@ -126,8 +126,8 @@ bool Vehicle::change_lane()
 
 }
 
-void Vehicle::get_new_state_cost(){
-  for (map<int, double>::const_iterator it = this->state_cost.begin(); it!=this->state_cost.end(); ++it ){
+void Vehicle::get_lane_cost(){
+  for (map<int, double>::const_iterator it = this->lane_cost.begin(); it!=this->lane_cost.end(); ++it ){
     int key = it->first;
     double cost = it->second;
     int new_lane;
@@ -140,7 +140,7 @@ void Vehicle::get_new_state_cost(){
       new_lane = this->lane;
     }
     bool too_close = this->check_car_in_lane(new_lane, cost);
-    this->state_cost[key] = cost;  
+    this->lane_cost[key] = cost;  
   }
 }
 

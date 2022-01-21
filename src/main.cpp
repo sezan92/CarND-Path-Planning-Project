@@ -144,13 +144,13 @@ int main() {
             ego.speedup();
           }
           ego.gen_trajectory(next_x_vals, next_y_vals);
-          ego.get_new_state_cost();
-          for(auto it = ego.state_cost.cbegin(); it != ego.state_cost.cend(); ++it)
+          ego.get_new_lane_cost();
+          for(auto it = ego.lane_cost.cbegin(); it != ego.lane_cost.cend(); ++it)
           {
               std::cout <<"INFO: "<< it->first << ": " << it->second << "\n";
           }
 
-          // std::cout<<"INFO: state cost: "<<ego.state_cost<<std::endl;
+          // std::cout<<"INFO: state cost: "<<ego.lane_cost<<std::endl;
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
 
