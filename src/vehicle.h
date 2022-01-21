@@ -126,7 +126,7 @@ bool Vehicle::change_lane()
 
 }
 
-void Vehicle::get_lane_cost(){
+void Vehicle::get_new_lane_cost(){
   for (map<int, double>::const_iterator it = this->lane_cost.begin(); it!=this->lane_cost.end(); ++it ){
     int key = it->first;
     double cost = it->second;
