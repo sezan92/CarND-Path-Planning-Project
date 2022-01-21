@@ -132,23 +132,44 @@ int main() {
            *   sequentially every .02 seconds
            */
 
-          double car_in_lane_cost = 0;
-          too_close = ego.check_car_in_lane(ego.lane, car_in_lane_cost);
-          if(too_close)
-          {
-            ego.change_lane();
-            ego.slowdown();
-          }
-          else
-          {
-            ego.speedup();
-          }
-          ego.gen_trajectory(next_x_vals, next_y_vals);
+          // double car_in_lane_cost = 0;
+          // too_close = ego.check_car_in_lane(ego.lane, car_in_lane_cost);
+          // if(too_close)
+          // {
+          //   ego.change_lane();
+          //   ego.slowdown();
+          // }
+          // else
+          // {
+          //   ego.speedup();
+          // }
+          
           ego.get_new_lane_cost();
           for(auto it = ego.lane_cost.cbegin(); it != ego.lane_cost.cend(); ++it)
           {
               std::cout <<"INFO: "<< it->first << ": " << it->second << "\n";
           }
+          if (ego.lane_cost[ego.lane] < 0)
+          {
+            if ((ego.lane > 0) && (ego.lane_cost[ego.lane - 1] > ego.lane_cost[ego.lane]))
+            {
+              ego.change_lane_left();
+
+            }
+            else if ((ego.lane < 2) && (ego.lane_cost[ego.lane + 1] > ego.lane_cost[ego.lane]))
+            {
+              ego.change_lane_right();
+            }
+            else 
+            {
+              ego.slowdown();
+            }
+          }
+          else {
+            ego.speedup();
+          }
+          
+          ego.gen_trajectory(next_x_vals, next_y_vals);
 
           // std::cout<<"INFO: state cost: "<<ego.lane_cost<<std::endl;
           msgJson["next_x"] = next_x_vals;
