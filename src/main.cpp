@@ -151,16 +151,16 @@ int main() {
           }
           if (ego.lane_cost[ego.lane] < 0)
           {
-            if ((ego.lane > 0) && (ego.lane_cost[ego.lane - 1] > ego.lane_cost[ego.lane]))
+            if ((ego.lane > 0) && !(ego.lane_cost[ego.lane - 1] < 0))
             {
               ego.change_lane_left();
 
             }
-            else if ((ego.lane < 2) && (ego.lane_cost[ego.lane + 1] > ego.lane_cost[ego.lane]))
+            if ((ego.lane < 2) && !(ego.lane_cost[ego.lane + 1] < 0))
             {
               ego.change_lane_right();
             }
-            else 
+            if ((ego.lane == 0) && (ego.lane_cost[1] < 0) || (ego.lane==1 && ego.lane_cost[1] < 0 && ego.lane_cost[2] <0) || (ego.lane == 2 && ego.lane_cost[1] < 0) ) 
             {
               ego.slowdown();
             }

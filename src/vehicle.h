@@ -131,6 +131,7 @@ void Vehicle::get_new_lane_cost(){
     int key = it->first;
     double cost = it->second;
     int new_lane;
+    double max_distance = 30;
     if (key < 3)
     {
       new_lane = key;
@@ -139,7 +140,9 @@ void Vehicle::get_new_lane_cost(){
     {
       new_lane = this->lane;
     }
-    bool too_close = this->check_car_in_lane(new_lane, cost);
+    if (key == this->lane) max_distance = 30;
+    else max_distance = 15;
+    bool too_close = this->check_car_in_lane(new_lane, cost, max_distance);
     this->lane_cost[key] = cost;  
   }
 }
