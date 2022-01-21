@@ -45,7 +45,7 @@ class Vehicle {
   string state;
   vector<double> previous_path_x, previous_path_y, map_waypoints_x, map_waypoints_y, map_waypoints_s;
   vector<vector<double>> sensor_fusion;
-  map<int, double> state_cost { {0, -100000.00}, {1, -100000.00} , {2, -100000.00}};//, {"KL_SD", -100000.00}};
+  map<int, double> state_cost { {0, -100000.00}, {1, -100000.00} , {2, -100000.00}, {3, -100000.00}};
 
 };
 
@@ -130,7 +130,16 @@ void Vehicle::get_new_state_cost(){
   for (map<int, double>::const_iterator it = this->state_cost.begin(); it!=this->state_cost.end(); ++it ){
     int key = it->first;
     double cost = it->second;
-    bool too_close = this->check_car_in_lane(key, cost);
+    int new_lane;
+    if (key < 3)
+    {
+      new_lane = key;
+    }
+    else
+    {
+      new_lane = this->lane;
+    }
+    bool too_close = this->check_car_in_lane(new_lane, cost);
     this->state_cost[key] = cost;  
   }
 }
