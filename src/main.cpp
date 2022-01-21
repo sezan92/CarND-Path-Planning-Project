@@ -131,18 +131,6 @@ int main() {
            * TODO: define a path made up of (x,y) points that the car will visit
            *   sequentially every .02 seconds
            */
-
-          // double car_in_lane_cost = 0;
-          // too_close = ego.check_car_in_lane(ego.lane, car_in_lane_cost);
-          // if(too_close)
-          // {
-          //   ego.change_lane();
-          //   ego.slowdown();
-          // }
-          // else
-          // {
-          //   ego.speedup();
-          // }
           
           ego.get_new_lane_cost();
           for(auto it = ego.lane_cost.cbegin(); it != ego.lane_cost.cend(); ++it)
