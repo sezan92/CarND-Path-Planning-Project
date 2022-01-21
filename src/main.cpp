@@ -145,8 +145,6 @@ int main() {
           }
           ego.gen_trajectory(next_x_vals, next_y_vals);
           ego.get_new_state_cost();
-
-          std::cout<<"INFO: car in lane cost: "<<car_in_lane_cost<<std::endl;
           for(auto it = ego.state_cost.cbegin(); it != ego.state_cost.cend(); ++it)
           {
               std::cout <<"INFO: "<< it->first << ": " << it->second << "\n";
