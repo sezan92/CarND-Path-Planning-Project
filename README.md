@@ -63,3 +63,7 @@ If the cost of the current lane is negative
         speed up
 
 ```
+
+### Way of Improvement
+
+One way of improvement is to predict the cars in each lane beforehand and choose the best lane at each iteration. Then select the behaviour at each iteration accordingly. It should optimize the path planning
