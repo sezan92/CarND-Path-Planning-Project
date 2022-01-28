@@ -9,6 +9,9 @@ cd build && cmake .. && make
 - Then run the binary named `path_planning`
 ```./path_planning`
 
+## Documentation
+The Old README.md file is renamed as [Readme.old.md](Readme.old.md)
+
 ## Reflection
 
 In this section, I am describing the code model for generating paths. 
