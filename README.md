@@ -15,7 +15,9 @@ Youtube video link https://youtu.be/axl83BoeHD8 .
 cd build && cmake .. && make
 ```
 - Then run the binary named `path_planning`
-```./path_planning` 
+```bash
+./path_planning
+``` 
 
 
 ## Reflection
