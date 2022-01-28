@@ -15,10 +15,6 @@ using std::string;
 using std::vector;
 
 
-void set_speed(double target_speed, double current_speed_mph, double car_s, vector<double> map_waypoints_s, vector<double> map_waypoints_x, vector<double> map_waypoints_y, vector<double> &next_x_vals, vector<double> &next_y_vals);
-double mph_to_mps(double target_speed_mph);
-
-
 int main() {
   uWS::Hub h;
 
@@ -194,24 +190,4 @@ int main() {
   }
   
   h.run();
-}
-
-double mph_to_mps(double target_speed_mph){
-  return target_speed_mph * 1610 / 3600;
-}
-
-
-void set_speed(double target_speed_mph, double current_speed_mph, double car_s, vector<double> map_waypoints_s, vector<double> map_waypoints_x, vector<double> map_waypoints_y, vector<double> &next_x_vals, vector<double> &next_y_vals){
-  
-  double target_speed_mps = mph_to_mps(target_speed_mph);
-  double current_speed_mps = mph_to_mps(current_speed_mph);
-  
-  double dist_inc = target_speed_mps / NUM_POINTS;
-  for (int i = 0; i < NUM_POINTS; ++i) {
-    double next_s = car_s + (i + 1) * dist_inc;
-    double next_d = 6;
-    vector<double> xy = getXY(next_s, next_d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
-    next_x_vals.push_back(xy[0]);
-    next_y_vals.push_back(xy[1]);
-  }
 }
