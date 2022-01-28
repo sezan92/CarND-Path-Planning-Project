@@ -45,7 +45,7 @@ class Vehicle {
   string state;
   vector<double> previous_path_x, previous_path_y, map_waypoints_x, map_waypoints_y, map_waypoints_s;
   vector<vector<double>> sensor_fusion;
-  map<int, double> lane_cost { {0, -100000.00}, {1, -100000.00} , {2, -100000.00}, {3, -100000.00}};
+  map<int, double> lane_cost { {0, 0}, {1, 0} , {2, 0}, {3, 0}};
 
 };
 
@@ -171,6 +171,7 @@ bool Vehicle::check_car_in_lane(int lane, double &cost, double max_distance){
           
         }
 
+
       }
       else 
       {
@@ -178,11 +179,15 @@ bool Vehicle::check_car_in_lane(int lane, double &cost, double max_distance){
           cost = -abs(check_car_s - this->s);
           return true;
         }
+        else
+        {
+          cost = abs(check_car_s - this->s);
+        }
       }
     }
 
   }
-  cost = 0;
+
   return false;
 }
 
