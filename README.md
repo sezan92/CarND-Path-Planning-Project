@@ -1,7 +1,7 @@
 # Self Driving Car Path Planning Project
 
 ## Old README
-The Old README.md file is renamed as [Readme.old.md](#Readme.old.md)
+The Old README.md file is renamed as [Readme.old.md](Readme.old.md)
 
 ### How to use
 - Download and Open the term 3 simulator. The link is provided in the old readme file.
@@ -14,7 +14,7 @@ cd build && cmake .. && make
 
 
 ## Reflection
-The reflection on the code, i.e. the code structure is described in [Reflection.md](#Reflection.md) file. 
+The reflection on the code, i.e. the code structure is described in [Reflection.md](Reflection.md) file. 
 
 ### Ways of Improvement
 
