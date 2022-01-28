@@ -3,6 +3,11 @@
 ## Old README
 The Old README.md file is renamed as [Readme.old.md](Readme.old.md)
 
+## Video
+Youtube video link https://youtu.be/axl83BoeHD8 .
+
+![](CarNDPathPlanningProject_Udacity_Self_Driving_Car_Nanodeg.gif)
+
 ### How to use
 - Download and Open the term 3 simulator. The link is provided in the old readme file.
 - Run the following commands to build the binary file
