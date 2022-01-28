@@ -164,11 +164,18 @@ bool Vehicle::check_car_in_lane(int lane, double &cost, double max_distance){
       if (lane == this->lane)
       {
 
-        if ((check_car_s > this->s) && ((check_car_s - this->s) < max_distance))
+        if (check_car_s > this->s)
         {
-          cost = this->s - check_car_s;
-          return true;
-          
+          if((check_car_s - this->s) < max_distance)
+          {
+            cost = this->s - check_car_s;
+            return true;
+            
+          }
+          else 
+          {
+            cost = abs(check_car_s - this->s);
+          }
         }
 
 

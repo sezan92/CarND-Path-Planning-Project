@@ -139,18 +139,35 @@ int main() {
           }
           if (ego.lane_cost[ego.lane] < 0)
           {
-            if ((ego.lane > 0) && !(ego.lane_cost[ego.lane - 1] < 0))
-            {
-              ego.change_lane_left();
-
-            }
-            if ((ego.lane < 2) && !(ego.lane_cost[ego.lane + 1] < 0))
-            {
-              ego.change_lane_right();
-            }
             if ((ego.lane == 0) && (ego.lane_cost[1] < 0) || (ego.lane==1 && ego.lane_cost[1] < 0 && ego.lane_cost[2] <0) || (ego.lane == 2 && ego.lane_cost[1] < 0) ) 
             {
               ego.slowdown();
+            }
+            else 
+            {
+              if ((ego.lane == 1) && (ego.lane_cost[0] > 0) && (ego.lane_cost[2] > 0))
+              {
+                if (ego.lane_cost[0] > ego.lane_cost[2])
+                {
+                  ego.change_lane_left();
+                }
+                else 
+                {
+                  ego.change_lane_right();
+                }
+              }
+              else 
+              {
+                if ((ego.lane > 0) && !(ego.lane_cost[ego.lane - 1] < 0))
+                {
+                  ego.change_lane_left();
+
+                }
+                if ((ego.lane < 2) && !(ego.lane_cost[ego.lane + 1] < 0))
+                {
+                  ego.change_lane_right();
+                }
+              }
             }
           }
           else {
