@@ -1,6 +1,6 @@
 # Self Driving Car Path Planning Project
 
-## Documentation
+## Old README
 The Old README.md file is renamed as [Readme.old.md](#Readme.old.md)
 
 ### How to use
@@ -14,8 +14,10 @@ cd build && cmake .. && make
 
 
 ## Reflection
-The reflection on the code, i.e. the code structure is described in [Reflection.md](#Reflection.md) file
+The reflection on the code, i.e. the code structure is described in [Reflection.md](#Reflection.md) file. 
 
-### Way of Improvement
+### Ways of Improvement
 
-One way of improvement is to predict the cars in each lane beforehand and choose the best lane at each iteration. Then select the behaviour at each iteration accordingly. It should optimize the path planning
+- Use Data driven approach along with model driven approach to predict the cars in each lane at each iteration. Right now, the prediction is based on simple kinematic model. Using Machine learning based method would improve the lane choice.
+- Choose the best lane. Currently, by default the car prefers the left lane over right lane . But it should be based on available cars and their distances in each lane. 
+- Use of Reinforcement learning. If we can model the environment as an MDP, we can try to use Reinforcement learning as well.
