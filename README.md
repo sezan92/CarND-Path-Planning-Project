@@ -1,7 +1,7 @@
 # Self Driving Car Path Planning Project
 
 ## Old README
-The Old README.md file is renamed as [Readme.old.md](Readme.old.md)
+The Old README.md file is renamed as [Readme.old.md](README.old.md)
 
 ## Video
 Youtube video link https://youtu.be/axl83BoeHD8 .
